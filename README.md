@@ -30,6 +30,14 @@ Just use your real text as keys, enjoy automatic draft translations (with Google
 
 ---
 
+## Example projects
+
+Ready-to-run example files can be found in this repository:  
+- [example_main.py](example_main.py) — entry point and Locy configuration  
+- [example_second.py](example_second.py) — using `lc` in other modules
+
+---
+
 ## Installation
 ```bash
 pip install googletrans==4.0.0-rc1
@@ -37,30 +45,70 @@ pip install googletrans==4.0.0-rc1
 Clone this repo and use the files directly, or pip-install after PyPI release.
 
 ## Usage Example
+
+See ready-to-run usage in [example_main.py](example_main.py) and [example_second.py](example_second.py) in this repository.
+
+The recommended way to use Locy is to configure it **once** at the entry point of your application (for example, in `main.py`) and then import and use the singleton instance `lc` in all other modules.  
+Always call `configure()` before importing `lc` or any modules that depend on it!
+
+- Note: Do not import lc or any modules that use it before you call configure(). Otherwise you will get an initialization error.
+
 ```python
-from locy import Locy
+from locy import configure
 
+configure(translations_dir="./translations", default_lang="en")
 
-lc = Locy(translations_dir="./translations", default_lang="ru")
-lang = "en"
-value1 = "данные"
-value2 = 42
+from locy import lc
 
-message = lc(locals(), lang, "Получено значение {value1}, еще значение {value2}!")
-print(message)  # "Value data received, value 42!" (auto translation, variables inserted)
+lang = "ru"
+var = "hello"
+message = lc(locals(), lang, "Your message: {var}")
+print(message)
 ```
+
 ## Async usage
+
+You can use Locy in async code with `await lc.acall(...)`.
+
+See [example_main.py](example_main.py) for an async usage demo.
+
 ```python
 import asyncio
-lc = Locy(translations_dir="./translations", default_lang="ru")
+from locy import configure
+
+configure(translations_dir="./translations", default_lang="en")
+from locy import lc
+
 async def main():
-    lang = "en"
-    foo = "тест"
-    bar = 17
-    msg = await lc.acall(locals(), lang, "Асинхронно: {foo}, число: {bar}")
+    lang = "ru"
+    foo = "async test"
+    bar = 123
+    msg = await lc.acall(locals(), lang, "Async example: {foo}, value: {bar}")
     print(msg)
 asyncio.run(main())
 ```
+
+
+---
+
+## Using Locy in multiple files
+
+Check out [example_main.py](example_main.py) and [example_second.py](example_second.py) for a real-world multi-file usage pattern.
+
+- Configure Locy **once** at the start of your main module, *before* importing `lc` or any modules that will use it.
+- In all other modules, simply `from locy import lc` and use it as shown in the examples.
+
+**Note:**  
+If you try to use `lc` before calling `configure()`, you'll get a helpful error message explaining that Locy needs to be configured first.
+
+
+## Initialization order matters!
+
+- Always configure Locy in your main file before using or importing `lc` elsewhere.
+- All calls to `lc` will use the singleton instance you configured.
+- If you forget to call `configure()` before using `lc`, Locy will show a clear error message instead of crashing your app.
+
+See the provided example files for best practices.
 
 ## Language Codes (with aliases)
 - You can use either 2-letter (en, ru, uk, de, etc.) or 3-letter codes (eng, rus, ukr, deu, etc.).
@@ -90,6 +138,14 @@ lc(locals(), lang, "Hello {user}, balance: {amount} USD.")
 python -m unittest test_locy.py
 ```
 - The test suite checks all core scenarios: translation, variable matching, language aliases, brace errors, hidden symbols, async mode, and manual translation file mistakes.
+
+## Best Practice
+
+- Call `configure()` only once, as early as possible in your main entry file.
+- Only after configuration, import `lc` in all files where you want to use it.
+- If you want to use more than one configuration in a single app (rarely needed), create explicit Locy instances instead of using the singleton.
+
+---
 
 ## Contributing
 
