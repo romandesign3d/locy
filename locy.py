@@ -9,6 +9,12 @@ import unicodedata
 from lang_aliases import LANG_ALIASES
 MAX_LEN = 1000
 
+lc = None
+
+def configure(**kwargs):
+    global lc
+    lc = Locy(**kwargs)
+
 class Locy:
     def __init__(self, translations_dir="./translations", default_lang="ru"):
         self.translations_dir = Path(translations_dir)
